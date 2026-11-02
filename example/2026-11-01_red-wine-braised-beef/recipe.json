@@ -1,0 +1,376 @@
+{
+  "schema": 1,
+  "slug": "2026-11-01_red-wine-braised-beef",
+  "title": "Red Wine Braised Chuck Roast",
+  "created": "2026-11-01",
+  "cuisine": "French-American",
+  "genre": "Braise",
+  "tags": [
+    "beef",
+    "dutch oven",
+    "hands-off",
+    "comfort"
+  ],
+  "servings": 5,
+  "difficulty": "Easy",
+  "time": {
+    "active": "30 min",
+    "total": "4 hr"
+  },
+  "target_meal_time": "6:30 PM",
+  "summary": "Chuck roast seared hard, then braised in red wine and beef broth until it shreds. Rustic sauce with the vegetables left in, spooned over mashed potatoes.",
+  "authenticity_note": "Built on the boeuf bourguignon method: hard sear, tomato paste and flour cooked into the fond, wine reduced before the broth goes in.",
+  "shopping_note": "Pantry items are marked to confirm. Everything else is a buy.",
+  "shopping": [
+    {
+      "section": "Meat",
+      "items": [
+        {
+          "name": "Boneless chuck roast",
+          "qty": "3.5 lb",
+          "status": "buy",
+          "note": "Look for even marbling and a thick piece."
+        }
+      ]
+    },
+    {
+      "section": "Produce",
+      "items": [
+        {
+          "name": "Yellow onions",
+          "qty": "2 medium",
+          "status": "buy"
+        },
+        {
+          "name": "Carrots",
+          "qty": "4",
+          "status": "buy"
+        },
+        {
+          "name": "Celery",
+          "qty": "3 stalks",
+          "status": "buy"
+        },
+        {
+          "name": "Garlic",
+          "qty": "4 cloves",
+          "status": "buy"
+        },
+        {
+          "name": "Fresh thyme",
+          "qty": "4 sprigs",
+          "status": "buy"
+        },
+        {
+          "name": "Fresh rosemary",
+          "qty": "1 sprig",
+          "status": "buy"
+        }
+      ]
+    },
+    {
+      "section": "Pantry",
+      "items": [
+        {
+          "name": "Dry red wine",
+          "qty": "1.5 cups",
+          "status": "buy",
+          "note": "Cabernet or Merlot you would drink. Skip cooking wine."
+        },
+        {
+          "name": "Beef broth",
+          "qty": "1.5 cups",
+          "status": "buy"
+        },
+        {
+          "name": "Tomato paste",
+          "qty": "2 tbsp",
+          "status": "have"
+        },
+        {
+          "name": "All-purpose flour",
+          "qty": "2 tbsp",
+          "status": "have"
+        },
+        {
+          "name": "Worcestershire sauce",
+          "qty": "1 tbsp",
+          "status": "have"
+        },
+        {
+          "name": "Dijon mustard",
+          "qty": "1 tbsp",
+          "status": "have"
+        },
+        {
+          "name": "Bay leaves",
+          "qty": "2",
+          "status": "have"
+        },
+        {
+          "name": "Kosher salt",
+          "qty": "2 tsp + to taste",
+          "status": "have"
+        },
+        {
+          "name": "Black pepper",
+          "qty": "1 tsp",
+          "status": "have"
+        },
+        {
+          "name": "Olive oil",
+          "qty": "2 tbsp",
+          "status": "have"
+        }
+      ]
+    }
+  ],
+  "equipment": [
+    {
+      "name": "Dutch oven, 6 qt",
+      "note": "A smaller pot needs the roast cut into more pieces."
+    },
+    "Cutting board and chef's knife",
+    "Tongs",
+    "Wooden spoon",
+    "Two forks for shredding"
+  ],
+  "prep": {
+    "intro": "Most of this dish is oven time. Start about 4 hours before dinner.",
+    "timeline": [
+      {
+        "when": "2:15 PM",
+        "task": "Pull the roast from the fridge. Chop vegetables."
+      },
+      {
+        "when": "2:30 PM",
+        "task": "Oven on to 325°F. Sear the beef."
+      },
+      {
+        "when": "3:00 PM",
+        "task": "Pot goes in the oven."
+      },
+      {
+        "when": "6:00 PM",
+        "task": "Check tenderness. Make mashed potatoes."
+      },
+      {
+        "when": "6:30 PM",
+        "task": "Serve."
+      }
+    ],
+    "concurrent": [
+      "Make the mashed potatoes during the last 30 minutes of the braise."
+    ],
+    "steps": [
+      {
+        "title": "Chop the vegetables",
+        "when": "15 min",
+        "ingredients": [
+          {
+            "qty": "2",
+            "item": "yellow onions"
+          },
+          {
+            "qty": "4",
+            "item": "carrots"
+          },
+          {
+            "qty": "3 stalks",
+            "item": "celery"
+          },
+          {
+            "qty": "4 cloves",
+            "item": "garlic"
+          }
+        ],
+        "instructions": [
+          "Chop the onions into 1/2-inch pieces.",
+          "Cut carrots and celery into 1-inch chunks. Big pieces survive 3 hours in the oven.",
+          "Smash the garlic cloves with the flat of the knife and peel."
+        ]
+      }
+    ]
+  },
+  "cook": {
+    "warnings": [
+      "Pat the beef **completely dry** before searing. Wet meat steams and never browns."
+    ],
+    "steps": [
+      {
+        "title": "Season and sear the beef",
+        "clock": "2:30 PM",
+        "time": "15 min",
+        "heat": "Medium-high",
+        "ingredients": [
+          {
+            "qty": "3.5 lb",
+            "item": "chuck roast",
+            "note": "cut into 3 or 4 chunks"
+          },
+          {
+            "qty": "2 tsp",
+            "item": "kosher salt"
+          },
+          {
+            "qty": "1 tsp",
+            "item": "black pepper"
+          },
+          {
+            "qty": "2 tbsp",
+            "item": "olive oil"
+          }
+        ],
+        "instructions": [
+          "Heat the oven to 325°F.",
+          "Pat the beef dry and season all sides with the salt and pepper.",
+          "Heat the oil in the Dutch oven until it shimmers.",
+          "Sear 4 to 5 minutes per side without moving it. Work in batches so pieces don't touch.",
+          "Move the beef to a plate."
+        ],
+        "done_when": "Every side has a deep brown crust. Pale gray means it needs more time.",
+        "tips": [
+          "If the meat sticks, it is not ready to flip. It releases once the crust forms."
+        ]
+      },
+      {
+        "title": "Build the base",
+        "clock": "2:45 PM",
+        "time": "7 min",
+        "heat": "Medium",
+        "ingredients": [
+          {
+            "qty": "2",
+            "item": "chopped onions"
+          },
+          {
+            "qty": "4",
+            "item": "carrots, chunked"
+          },
+          {
+            "qty": "3 stalks",
+            "item": "celery, chunked"
+          },
+          {
+            "qty": "4 cloves",
+            "item": "garlic, smashed"
+          },
+          {
+            "qty": "2 tbsp",
+            "item": "tomato paste"
+          },
+          {
+            "qty": "2 tbsp",
+            "item": "flour"
+          }
+        ],
+        "instructions": [
+          "Lower the heat. Add onions, carrots and celery. Cook 5 minutes, scraping the bottom.",
+          "Add garlic, tomato paste and flour. Stir 1 to 2 minutes until the paste turns brick red."
+        ],
+        "howto": [
+          {
+            "title": "Cook out the flour",
+            "steps": [
+              "Stir constantly so the flour coats the vegetables.",
+              "It should smell toasty, not raw. This is what thickens the sauce later without extra work."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Deglaze and braise",
+        "clock": "2:55 PM",
+        "time": "3 to 3.5 hr",
+        "heat": "325°F oven",
+        "ingredients": [
+          {
+            "qty": "1.5 cups",
+            "item": "dry red wine"
+          },
+          {
+            "qty": "1.5 cups",
+            "item": "beef broth"
+          },
+          {
+            "qty": "1 tbsp",
+            "item": "Worcestershire"
+          },
+          {
+            "qty": "1 tbsp",
+            "item": "Dijon mustard"
+          },
+          {
+            "qty": "2",
+            "item": "bay leaves"
+          },
+          {
+            "qty": "4 + 1",
+            "item": "thyme sprigs + rosemary sprig"
+          }
+        ],
+        "instructions": [
+          "Pour in the wine and scrape up every browned bit. Simmer 3 minutes.",
+          "Add broth, Worcestershire, Dijon and herbs.",
+          "Return the beef and plate juices. Liquid should come halfway up the meat.",
+          "Cover and bake 3 to 3.5 hours."
+        ],
+        "done_when": "A fork twists into the meat with no resistance."
+      },
+      {
+        "title": "Shred and finish",
+        "clock": "6:05 PM",
+        "time": "15 min",
+        "heat": "Medium (stovetop)",
+        "ingredients": [
+          {
+            "qty": "to taste",
+            "item": "kosher salt"
+          }
+        ],
+        "instructions": [
+          "Remove bay leaves and herb stems. Skim fat off the top.",
+          "Shred the beef in the pot with two forks.",
+          "If the sauce is thin, simmer uncovered 10 minutes. Salt to taste."
+        ]
+      }
+    ]
+  },
+  "plating": [
+    "Wide shallow bowl. Mashed potatoes first, swooped with the back of a spoon to make a well.",
+    "Spoon beef and vegetables into the well, then extra sauce over the top.",
+    "Finish with chopped parsley or thyme leaves for color."
+  ],
+  "tips": [
+    "Leftovers taste better the next day."
+  ],
+  "fixes": [
+    {
+      "problem": "Sauce too thin",
+      "fix": "Simmer uncovered 10 to 15 minutes."
+    },
+    {
+      "problem": "Meat still tough at 3.5 hours",
+      "fix": "It needs more time, not less. Back in for 30 minutes."
+    }
+  ],
+  "sources": [
+    {
+      "title": "Well Plated: Braised Beef",
+      "url": "https://www.wellplated.com/braised-beef/"
+    }
+  ],
+  "cooks": [
+    {
+      "date": "2026-11-01",
+      "photo": "photo-2026-11-01.jpg",
+      "gut": 4,
+      "notes": "Rich sauce. Boxed mash worked fine.",
+      "change_next_time": "More garlic.",
+      "comparisons": []
+    }
+  ],
+  "score": 8.0,
+  "rank": 1,
+  "rank_total": 1
+}

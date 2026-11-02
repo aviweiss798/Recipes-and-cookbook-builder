@@ -1,0 +1,418 @@
+<title>__TITLE__</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: kitchen ticket. Sticky tab rail (Shop / Prep / Cook), one column of step cards sized for a phone propped on the counter. */
+:root {
+  --bg: #EEF2F5;
+  --surface: #FFFFFF;
+  --ink: #15202B;
+  --muted: #566573;
+  --line: #D3DCE4;
+  --accent: #1F4FA3;      /* enamel cobalt */
+  --accent-soft: #E1E9F7;
+  --heat: #B8331D;        /* chili: heat, warnings */
+  --heat-soft: #F8E4DF;
+  --herb: #2C7447;        /* done */
+  --herb-soft: #E0F0E6;
+  --display: "Gloock", "Georgia", "Times New Roman", serif;
+  --body: "IBM Plex Sans", -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E141A; --surface: #18212B; --ink: #E5EBF1; --muted: #98A7B6; --line: #2B3744;
+    --accent: #86A9F0; --accent-soft: #1E2C45; --heat: #F08068; --heat-soft: #3A1F1A;
+    --herb: #74C795; --herb-soft: #193324; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E141A; --surface: #18212B; --ink: #E5EBF1; --muted: #98A7B6; --line: #2B3744;
+  --accent: #86A9F0; --accent-soft: #1E2C45; --heat: #F08068; --heat-soft: #3A1F1A;
+  --herb: #74C795; --herb-soft: #193324; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.wrap { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+h1, h2, h3 { font-family: var(--display); font-weight: 400; text-wrap: balance; margin: 0; line-height: 1.15; }
+h1 { font-size: clamp(30px, 7vw, 44px); }
+h2 { font-size: 26px; }
+h3 { font-size: 20px; }
+p { margin: 0; }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+strong { font-weight: 600; }
+a { color: var(--accent); }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* header */
+header.top { padding-top: 24px; display: flex; flex-direction: column; gap: 12px; }
+.summary { color: var(--muted); max-width: 62ch; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; }
+.fact { font-family: var(--mono); font-size: 13px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); }
+.fact b { font-weight: 600; }
+.wake { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: var(--surface); padding: 8px 14px; border-radius: 999px; cursor: pointer; font-size: 15px; }
+.wake[aria-pressed="true"] { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+.wake .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; opacity: .5; }
+
+/* tabs */
+nav.tabs { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding-block: 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+nav.tabs button { border: 1px solid var(--line); background: var(--surface); padding: 12px 6px; border-radius: 10px; cursor: pointer; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+nav.tabs button small { font-family: var(--mono); font-weight: 400; font-size: 12px; color: var(--muted); }
+nav.tabs button[aria-selected="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+nav.tabs button[aria-selected="true"] small { color: var(--bg); opacity: .75; }
+section.panel { display: flex; flex-direction: column; gap: 20px; }
+
+/* blocks */
+.block { display: flex; flex-direction: column; gap: 12px; }
+.callout { border-left: 4px solid var(--accent); background: var(--accent-soft); padding: 12px 14px; border-radius: 0 8px 8px 0; display: flex; flex-direction: column; gap: 6px; }
+.callout.heat { border-color: var(--heat); background: var(--heat-soft); }
+.callout .eyebrow { color: inherit; opacity: .8; }
+ul.plain { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+
+/* checklist */
+.progress { display: flex; align-items: center; gap: 12px; }
+.bar { flex: 1; height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--herb); width: 0; transition: width .2s; }
+.reset { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 14px; }
+.group { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.group > .eyebrow { padding: 10px 14px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; }
+label.item { display: grid; grid-template-columns: 26px 1fr auto; gap: 4px 12px; align-items: start; padding: 12px 14px; border-bottom: 1px solid var(--line); cursor: pointer; }
+label.item:last-child { border-bottom: 0; }
+label.item input { width: 22px; height: 22px; margin: 2px 0 0; accent-color: var(--herb); }
+label.item .name { min-width: 0; }
+label.item .qty { font-family: var(--mono); font-size: 14px; text-align: right; white-space: nowrap; }
+label.item .note { grid-column: 2 / 4; color: var(--muted); font-size: 14px; }
+label.item .chip { display: inline-block; font-family: var(--mono); font-size: 11px; letter-spacing: .05em; text-transform: uppercase; padding: 1px 6px; border-radius: 4px; margin-left: 6px; vertical-align: 2px; background: var(--accent-soft); color: var(--accent); }
+label.item .chip.buy { background: var(--heat-soft); color: var(--heat); }
+label.item:has(input:checked) .name, label.item:has(input:checked) .qty { text-decoration: line-through; color: var(--muted); }
+
+/* timeline */
+ol.timeline { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+ol.timeline li { display: grid; grid-template-columns: 92px 1fr; gap: 12px; padding: 10px 0; border-bottom: 1px dashed var(--line); }
+ol.timeline li:last-child { border-bottom: 0; }
+ol.timeline .when { font-family: var(--mono); font-size: 14px; color: var(--accent); font-weight: 600; }
+
+/* steps */
+.step { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.step.done { opacity: .5; }
+.step-head { display: flex; gap: 12px; align-items: flex-start; }
+.num { flex: none; width: 36px; height: 36px; border-radius: 50%; background: var(--ink); color: var(--bg); font-family: var(--mono); font-weight: 600; display: grid; place-items: center; }
+.step-head .t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.badges { display: flex; flex-wrap: wrap; gap: 6px; }
+.badge { font-family: var(--mono); font-size: 12px; padding: 2px 8px; border-radius: 6px; background: var(--accent-soft); color: var(--accent); }
+.badge.heat { background: var(--heat-soft); color: var(--heat); }
+.ing { background: var(--bg); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
+.ing .row { display: grid; grid-template-columns: minmax(84px, auto) 1fr; gap: 12px; font-size: 16px; }
+.ing .row .q { font-family: var(--mono); font-size: 14px; font-weight: 600; padding-top: 2px; }
+.ing .row .n small { color: var(--muted); }
+ol.do { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; }
+.howto { border: 1px solid var(--accent); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.howto .eyebrow { color: var(--accent); }
+.doneWhen { font-size: 15px; display: flex; gap: 8px; }
+.doneWhen b { color: var(--herb); font-family: var(--mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; padding-top: 3px; white-space: nowrap; }
+.tips { display: flex; flex-direction: column; gap: 6px; font-size: 15px; }
+.tips div { padding-left: 14px; border-left: 2px solid var(--line); }
+.markdone { align-self: flex-start; border: 1px solid var(--herb); color: var(--herb); background: transparent; border-radius: 8px; padding: 8px 14px; cursor: pointer; font-weight: 600; }
+.step.done .markdone { background: var(--herb); color: var(--surface); }
+
+table.fixes { width: 100%; border-collapse: collapse; font-size: 15px; }
+table.fixes td { padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.fixes td:first-child { font-weight: 600; width: 38%; }
+.tablewrap { overflow-x: auto; }
+.sources { font-size: 14px; color: var(--muted); }
+.sources a { word-break: break-word; }
+
+/* cooked card */
+.cooked { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; display: grid; grid-template-columns: 1fr; }
+.cooked img { width: 100%; height: auto; max-height: 70vh; object-fit: contain; display: block; background: var(--surface); }
+.cooked .meta { padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+.score { font-family: var(--display); font-size: 44px; line-height: 1; }
+.score small { font-family: var(--mono); font-size: 14px; color: var(--muted); }
+
+/* cookbook / print */
+a.toclink { color: inherit; text-decoration: none; border-bottom: 1px solid var(--line); }
+a.backlink { display: inline-block; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); text-decoration: none; margin-bottom: 8px; }
+.cover { min-height: 60vh; display: flex; flex-direction: column; justify-content: center; gap: 16px; }
+.cover h1 { font-size: 64px; }
+table.rank { width: 100%; border-collapse: collapse; font-size: 14px; }
+table.rank th { text-align: left; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); border-bottom: 2px solid var(--ink); padding: 6px; }
+table.rank td { padding: 8px 6px; border-bottom: 1px solid var(--line); }
+table.rank td.s { font-family: var(--mono); font-weight: 600; font-variant-numeric: tabular-nums; }
+.recipe-print { display: flex; flex-direction: column; gap: 20px; }
+.print-section { display: flex; flex-direction: column; gap: 16px; }
+[data-mode="print"] .step, [data-mode="print"] .group { break-inside: avoid; }
+[data-mode="print"] .pagebreak { break-before: page; }
+[data-mode="print"] .markdone, [data-mode="print"] .wake, [data-mode="print"] .reset, [data-mode="print"] nav.tabs { display: none !important; }
+body[data-mode="print"] { font-size: 12.5px; padding-block: 0; padding-left: 0; padding-right: 0; }
+body[data-mode="print"] .wrap { max-width: none; gap: 14px; }
+body[data-mode="print"] .recipe-print, body[data-mode="print"] .print-section, body[data-mode="print"] section.panel { gap: 12px; }
+body[data-mode="print"] .cooked { grid-template-columns: 3.4in 1fr; break-inside: avoid; }
+body[data-mode="print"] .cooked img { height: auto; max-height: 4.6in; object-fit: contain; }
+body[data-mode="print"] .shopgrid { columns: 2; column-gap: 14px; }
+body[data-mode="print"] .shopgrid .group { break-inside: avoid; margin-bottom: 12px; }
+body[data-mode="print"] label.item { padding: 5px 10px; grid-template-columns: 16px 1fr auto; }
+body[data-mode="print"] label.item input { width: 13px; height: 13px; }
+body[data-mode="print"] .step { padding: 12px; gap: 8px; }
+body[data-mode="print"] h1 { font-size: 34px; }
+body[data-mode="print"] .cover h1 { font-size: 60px; }
+body[data-mode="print"] .cover { min-height: 8in; }
+body[data-mode="print"] .facts .fact { font-size: 11px; }
+@media print { body { background: #fff; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<script type="application/json" id="recipe-data">__RECIPE_JSON__</script>
+<script type="application/json" id="render-config">__RENDER_CONFIG__</script>
+
+<div class="wrap" id="app"></div>
+
+<script>
+(function () {
+  "use strict";
+  var DATA = JSON.parse(document.getElementById("recipe-data").textContent);
+  var CFG = {};
+  try { CFG = JSON.parse(document.getElementById("render-config").textContent) || {}; } catch (e) { CFG = {}; }
+  var MODE = CFG.mode || "app"; // app | print | cookbook
+  var recipes = Array.isArray(DATA) ? DATA : [DATA];
+  document.body.setAttribute("data-mode", MODE === "app" ? "app" : "print");
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function md(s) { return esc(s).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>"); }
+  function store(k, v) {
+    try { if (v === undefined) return JSON.parse(localStorage.getItem(k) || "null"); localStorage.setItem(k, JSON.stringify(v)); } catch (e) { return null; }
+  }
+  function list(arr, fn) { return (arr || []).map(fn).join(""); }
+
+  function ingBlock(ings) {
+    if (!ings || !ings.length) return "";
+    return '<div class="ing">' + list(ings, function (i) {
+      return '<div class="row"><span class="q">' + esc(i.qty || "") + '</span><span class="n">' + md(i.item) + (i.note ? ' <small>(' + md(i.note) + ')</small>' : "") + "</span></div>";
+    }) + "</div>";
+  }
+  function stepCard(s, n, key, kind) {
+    var badges = [];
+    if (s.clock) badges.push('<span class="badge">' + esc(s.clock) + "</span>");
+    if (s.time) badges.push('<span class="badge">' + esc(s.time) + "</span>");
+    if (s.heat) badges.push('<span class="badge heat">' + esc(s.heat) + "</span>");
+    if (s.when) badges.push('<span class="badge">' + esc(s.when) + "</span>");
+    var howto = list(s.howto, function (h) {
+      return '<div class="howto"><span class="eyebrow">How to: ' + esc(h.title) + "</span>" +
+        '<ol class="do">' + list(h.steps, function (x) { return "<li>" + md(x) + "</li>"; }) + "</ol></div>";
+    });
+    return '<article class="step" data-key="' + esc(key) + '">' +
+      '<div class="step-head"><span class="num">' + n + '</span><div class="t"><h3>' + md(s.title) + "</h3>" +
+      (badges.length ? '<div class="badges">' + badges.join("") + "</div>" : "") + "</div></div>" +
+      ingBlock(s.ingredients) +
+      '<ol class="do">' + list(s.instructions, function (x) { return "<li>" + md(x) + "</li>"; }) + "</ol>" +
+      howto +
+      (s.done_when ? '<div class="doneWhen"><b>Done when</b><span>' + md(s.done_when) + "</span></div>" : "") +
+      (s.tips && s.tips.length ? '<div class="tips">' + list(s.tips, function (t) { return "<div>" + md(t) + "</div>"; }) + "</div>" : "") +
+      (MODE === "app" ? '<button class="markdone" type="button">Mark done</button>' : "") +
+      "</article>";
+  }
+
+  function shopPanel(r) {
+    var total = 0;
+    var groups = list(r.shopping, function (g, gi) {
+      return '<div class="group"><div class="eyebrow"><span>' + esc(g.section) + "</span><span>" + (g.items || []).length + "</span></div>" +
+        list(g.items, function (it, ii) {
+          total++;
+          var id = "shop-" + r.slug + "-" + gi + "-" + ii;
+          var chip = it.status === "have" ? '<span class="chip">confirm you have</span>' : it.status === "optional" ? '<span class="chip">optional</span>' : '<span class="chip buy">buy</span>';
+          return '<label class="item" for="' + esc(id) + '"><input type="checkbox" id="' + esc(id) + '" data-shop>' +
+            '<span class="name">' + md(it.name) + chip + '</span><span class="qty">' + esc(it.qty || "") + "</span>" +
+            (it.note ? '<span class="note">' + md(it.note) + "</span>" : "") + "</label>";
+        }) + "</div>";
+    });
+    var head = MODE === "app" ? '<div class="progress"><span class="mono" id="shopCount">0 / ' + total + '</span><div class="bar"><i id="shopBar"></i></div><button class="reset" type="button" id="shopReset">Reset</button></div>' : "";
+    return '<div class="block"><h2>Grocery list</h2>' + (r.shopping_note ? '<p class="summary">' + md(r.shopping_note) + "</p>" : "") + head + "</div>" +
+      (MODE === "app" ? groups : '<div class="shopgrid">' + groups + "</div>");
+  }
+
+  function prepPanel(r) {
+    var p = r.prep || {};
+    var out = '<div class="block"><h2>Before you cook</h2>' + (p.intro ? "<p>" + md(p.intro) + "</p>" : "") + "</div>";
+    if (p.timeline && p.timeline.length) {
+      out += '<div class="block"><span class="eyebrow">Game plan</span><div class="group" style="padding:4px 14px"><ol class="timeline">' +
+        list(p.timeline, function (t) { return '<li><span class="when">' + esc(t.when) + "</span><span>" + md(t.task) + "</span></li>"; }) + "</ol></div></div>";
+    }
+    if (r.equipment && r.equipment.length) {
+      out += '<div class="block"><span class="eyebrow">Equipment</span><div class="group">' +
+        list(r.equipment, function (e, i) {
+          var id = "eq-" + r.slug + "-" + i;
+          var name = typeof e === "string" ? e : e.name; var note = typeof e === "string" ? "" : e.note;
+          return '<label class="item" for="' + esc(id) + '"><input type="checkbox" id="' + esc(id) + '"><span class="name">' + md(name) + '</span><span class="qty"></span>' + (note ? '<span class="note">' + md(note) + "</span>" : "") + "</label>";
+        }) + "</div></div>";
+    }
+    if (p.concurrent && p.concurrent.length) {
+      out += '<div class="callout"><span class="eyebrow">Do these while cooking</span><ul class="plain">' + list(p.concurrent, function (c) { return "<li>" + md(c) + "</li>"; }) + "</ul></div>";
+    }
+    out += list(p.steps, function (s, i) { return stepCard(s, "P" + (i + 1), r.slug + "-p" + i); });
+    return out;
+  }
+
+  function cookPanel(r) {
+    var c = r.cook || {};
+    var out = '<div class="block"><h2>Cook</h2>' + (c.intro ? "<p>" + md(c.intro) + "</p>" : "") + "</div>";
+    if (c.warnings && c.warnings.length) {
+      out += '<div class="callout heat"><span class="eyebrow">Read first</span><ul class="plain">' + list(c.warnings, function (w) { return "<li>" + md(w) + "</li>"; }) + "</ul></div>";
+    }
+    out += list(c.steps, function (s, i) { return stepCard(s, i + 1, r.slug + "-c" + i); });
+    if (r.plating && r.plating.length) {
+      out += '<div class="block"><h2>Plating</h2><ul class="plain">' + list(r.plating, function (x) { return "<li>" + md(x) + "</li>"; }) + "</ul></div>";
+    }
+    if (r.tips && r.tips.length) {
+      out += '<div class="block"><h2>Tips from the pros</h2><ul class="plain">' + list(r.tips, function (x) { return "<li>" + md(x) + "</li>"; }) + "</ul></div>";
+    }
+    if (r.fixes && r.fixes.length) {
+      out += '<div class="block"><h2>If something goes wrong</h2><div class="tablewrap"><table class="fixes"><tbody>' +
+        list(r.fixes, function (f) { return "<tr><td>" + md(f.problem) + "</td><td>" + md(f.fix) + "</td></tr>"; }) + "</tbody></table></div></div>";
+    }
+    if (r.sources && r.sources.length) {
+      out += '<div class="block sources"><span class="eyebrow">Sources</span><ul class="plain">' +
+        list(r.sources, function (s) { return '<li><a href="' + esc(s.url) + '" target="_blank" rel="noopener">' + esc(s.title) + "</a></li>"; }) + "</ul></div>";
+    }
+    return out;
+  }
+
+  function header(r) {
+    var f = [];
+    if (r.cuisine) f.push(r.cuisine);
+    if (r.servings) f.push("<b>" + esc(r.servings) + "</b> servings");
+    if (r.time && r.time.active) f.push("<b>" + esc(r.time.active) + "</b> active");
+    if (r.time && r.time.total) f.push("<b>" + esc(r.time.total) + "</b> total");
+    if (r.difficulty) f.push(esc(r.difficulty));
+    if (r.target_meal_time) f.push("Dinner <b>" + esc(r.target_meal_time) + "</b>");
+    return '<header class="top"><span class="eyebrow">' + esc(r.genre || "Recipe") + (r.created ? " · " + esc(r.created) : "") + "</span>" +
+      "<h1>" + md(r.title) + "</h1>" + (r.summary ? '<p class="summary">' + md(r.summary) + "</p>" : "") +
+      '<div class="facts">' + f.map(function (x) { return '<span class="fact">' + x + "</span>"; }).join("") + "</div>" +
+      (r.authenticity_note ? '<div class="callout"><span class="eyebrow">Authenticity</span><p>' + md(r.authenticity_note) + "</p></div>" : "") +
+      (MODE === "app" ? '<button class="wake" type="button" id="wake" aria-pressed="false"><span class="dot"></span>Keep screen on</button>' : "") +
+      "</header>";
+  }
+
+  function cookedCard(r) {
+    var cooks = r.cooks || [];
+    if (!cooks.length) return "";
+    var last = cooks[cooks.length - 1];
+    var photo = last.photo ? '<img src="' + esc((CFG.photoBase || "") + last.photo) + '" alt="' + esc(r.title) + ' as cooked">' : "";
+    return '<div class="cooked">' + photo + '<div class="meta"><span class="eyebrow">Cooked ' + esc(last.date || "") + (cooks.length > 1 ? " · made " + cooks.length + " times" : "") + "</span>" +
+      (r.score != null ? '<div class="score">' + Number(r.score).toFixed(1) + ' <small>/ 10' + (r.rank ? " · #" + r.rank + " of " + r.rank_total : "") + "</small></div>" : "") +
+      (last.gut ? '<span class="mono">Gut rating ' + esc(last.gut) + " / 5</span>" : "") +
+      (last.notes ? "<p>" + md(last.notes) + "</p>" : "") +
+      (last.change_next_time ? '<p><strong>Next time:</strong> ' + md(last.change_next_time) + "</p>" : "") +
+      "</div></div>";
+  }
+
+  var app = document.getElementById("app");
+
+  if (MODE === "app") {
+    var r = recipes[0];
+    var tabs = [["shop", "Shop", "groceries"], ["prep", "Prep", "ahead"], ["cook", "Cook", (r.cook && r.cook.steps ? r.cook.steps.length : 0) + " steps"]];
+    app.innerHTML = header(r) + cookedCard(r) +
+      '<nav class="tabs" role="tablist">' + tabs.map(function (t) {
+        return '<button type="button" role="tab" id="tab-' + t[0] + '" aria-controls="panel-' + t[0] + '" data-tab="' + t[0] + '">' + t[1] + "<small>" + esc(t[2]) + "</small></button>";
+      }).join("") + "</nav>" +
+      '<section class="panel" role="tabpanel" id="panel-shop">' + shopPanel(r) + "</section>" +
+      '<section class="panel" role="tabpanel" id="panel-prep" hidden>' + prepPanel(r) + "</section>" +
+      '<section class="panel" role="tabpanel" id="panel-cook" hidden>' + cookPanel(r) + "</section>";
+
+    var KEY = "recipe:" + (r.slug || r.title);
+    var state = store(KEY) || { tab: "shop", checks: {}, done: {} };
+    state.checks = state.checks || {}; state.done = state.done || {};
+    function save() { store(KEY, state); }
+    function showTab(name) {
+      tabs.forEach(function (t) {
+        var on = t[0] === name;
+        document.getElementById("panel-" + t[0]).hidden = !on;
+        document.getElementById("tab-" + t[0]).setAttribute("aria-selected", on ? "true" : "false");
+      });
+      state.tab = name; save();
+    }
+    app.querySelectorAll("nav.tabs button").forEach(function (b) {
+      b.addEventListener("click", function () { showTab(b.getAttribute("data-tab")); window.scrollTo({ top: app.querySelector("nav.tabs").offsetTop - 4 }); });
+    });
+    var boxes = app.querySelectorAll('input[type="checkbox"]');
+    function updateShop() {
+      var s = app.querySelectorAll("input[data-shop]"); var n = 0;
+      s.forEach(function (x) { if (x.checked) n++; });
+      var c = document.getElementById("shopCount"); var bar = document.getElementById("shopBar");
+      if (c) c.textContent = n + " / " + s.length + " in the cart";
+      if (bar) bar.style.width = (s.length ? (100 * n / s.length) : 0) + "%";
+    }
+    boxes.forEach(function (x) {
+      x.checked = !!state.checks[x.id];
+      x.addEventListener("change", function () { state.checks[x.id] = x.checked; save(); updateShop(); });
+    });
+    var rs = document.getElementById("shopReset");
+    if (rs) rs.addEventListener("click", function () {
+      app.querySelectorAll("input[data-shop]").forEach(function (x) { x.checked = false; delete state.checks[x.id]; });
+      save(); updateShop();
+    });
+    app.querySelectorAll(".step").forEach(function (st) {
+      var k = st.getAttribute("data-key"); var btn = st.querySelector(".markdone");
+      function paint() { st.classList.toggle("done", !!state.done[k]); if (btn) btn.textContent = state.done[k] ? "Done ✓" : "Mark done"; }
+      paint();
+      if (btn) btn.addEventListener("click", function () { state.done[k] = !state.done[k]; save(); paint(); });
+    });
+    updateShop();
+    showTab(state.tab || "shop");
+
+    var wake = document.getElementById("wake"); var lock = null;
+    if (wake) wake.addEventListener("click", function () {
+      if (lock) { lock.release().catch(function () {}); lock = null; wake.setAttribute("aria-pressed", "false"); return; }
+      if (!("wakeLock" in navigator)) { wake.lastChild.textContent = "Screen lock not supported here"; return; }
+      navigator.wakeLock.request("screen").then(function (l) {
+        lock = l; wake.setAttribute("aria-pressed", "true");
+        l.addEventListener("release", function () { lock = null; wake.setAttribute("aria-pressed", "false"); });
+      }).catch(function () { wake.lastChild.textContent = "Screen lock blocked here"; });
+    });
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState === "visible" && wake && wake.getAttribute("aria-pressed") === "true" && !lock && "wakeLock" in navigator) {
+        navigator.wakeLock.request("screen").then(function (l) { lock = l; }).catch(function () {});
+      }
+    });
+  } else {
+    // print + cookbook: everything expanded, no controls
+    var html = "";
+    if (MODE === "cookbook") {
+      var ranked = recipes.filter(function (x) { return x.score != null; }).sort(function (a, b) { return (a.rank || 999) - (b.rank || 999); });
+      html += '<div class="cover"><span class="eyebrow">' + esc(CFG.owner || "") + "</span><h1>" + esc(CFG.title || "Cookbook") + "</h1>" +
+        '<p class="summary">' + recipes.length + " recipes · updated " + esc(CFG.updated || "") + "</p></div>";
+      if (ranked.length) {
+        html += '<div class="block pagebreak" id="rankings"><h2>Rankings</h2><div class="tablewrap"><table class="rank"><thead><tr><th>#</th><th>Dish</th><th>Score</th><th>Gut</th><th>Cooked</th></tr></thead><tbody>' +
+          list(ranked, function (x) {
+            var last = (x.cooks || [])[x.cooks.length - 1] || {};
+            return "<tr><td class=\"s\">" + x.rank + "</td><td><a class=\"toclink\" href=\"#r-" + esc(x.slug) + "\">" + md(x.title) + '</a></td><td class="s">' + Number(x.score).toFixed(1) + '</td><td class="s">' + esc(last.gut || "") + "/5</td><td class=\"mono\">" + esc(last.date || "") + "</td></tr>";
+          }) + "</tbody></table></div></div>";
+      }
+      var unranked = recipes.filter(function (x) { return x.score == null; });
+      if (unranked.length) {
+        html += '<div class="block"><span class="eyebrow">Not cooked yet</span><ul class="plain">' + list(unranked, function (x) { return "<li><a class=\"toclink\" href=\"#r-" + esc(x.slug) + "\">" + md(x.title) + "</a></li>"; }) + "</ul></div>";
+      }
+    }
+    recipes.forEach(function (r) {
+      var base = (CFG.photoBases && CFG.photoBases[r.slug]) || CFG.photoBase || "";
+      var saved = CFG.photoBase; CFG.photoBase = base;
+      html += '<article class="recipe-print pagebreak" id="r-' + esc(r.slug) + '">' + (MODE === "cookbook" ? '<a class="backlink" href="#rankings">&larr; Rankings</a>' : "") + header(r) + cookedCard(r) +
+        '<div class="print-section">' + shopPanel(r) + "</div>" +
+        '<div class="print-section">' + prepPanel(r) + "</div>" +
+        '<div class="print-section">' + cookPanel(r) + "</div></article>";
+      CFG.photoBase = saved;
+    });
+    app.innerHTML = html;
+  }
+})();
+</script>
