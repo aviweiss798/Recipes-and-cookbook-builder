@@ -112,7 +112,7 @@ COOKBOOK_TITLE="Sam's Cookbook" COOKBOOK_OWNER="Sam Lee" python3 build.py book R
 - `confident`: exactly one recipe is within 1 day of the photo.
 - `ambiguous`: several recipes, or none within a day. Decide by looking at the photo.
 
-Filenames are never used, so photos can keep their camera names. Save originals, not screenshots, so the capture date stays attached.
+Photos sent in chat are filed directly, so matching is optional. Use it for loose photos that arrive without context. Filenames are never used, so photos can keep their camera names. Keep originals, not screenshots, so the capture date stays attached.
 
 ## How scoring works
 
@@ -148,9 +148,20 @@ Position `i` (0 is best) of `n` dishes in a band scores `hi - (hi - lo) * (i + 0
 2. **Develop the dish**: settle on variants, research unconventional ideas, finish with a full concept.
 3. **Groceries and equipment**: build the list and confirm what you already have. Spices are confirmed every time.
 4. **Recipe page**: publish the three-tab page.
-5. **Photo, rating and cookbook**: file your photo, run the rating questions, rebuild `Cookbook.pdf`.
+5. **Photo, rating and cookbook save**: send the photo in chat, run the rating questions, rebuild `Cookbook.pdf`, commit and push.
 
-Install it as a Claude skill and edit the folder paths and kitchen details for your setup. The skill assumes a `Kitchen.md` file listing your equipment and a pool of spices. It is not included here because it is personal.
+### Cloud-only setup (no computer needed)
+
+The skill keeps your whole cookbook in a private GitHub repo that Claude clones at the start of each chat. Your own computer is never involved, so you can cook, send the photo and rate from your phone.
+
+1. Create an empty **private** repo for your cookbook. Keep it separate from this public builder repo, because it holds your photos.
+2. Copy `build.py`, `recipe_template.html` and `fonts/` into `_system/` in that repo, and put your `Kitchen.md` at the root.
+3. Install `skill/SKILL.md` as a Claude skill and replace `<owner>/<cookbook-repo>` with your repo.
+4. In Claude Code on the web, attach the repo with push access when a chat asks for it.
+
+After each cooked dish, Claude converts the photo, updates `recipe.json` and `rankings.json`, rebuilds `Cookbook.pdf` and pushes. Open the PDF from the repo in the GitHub app or ask Claude to send it.
+
+The skill assumes a `Kitchen.md` file listing your equipment and a pool of spices. It is not included here because it is personal.
 
 ## Notes
 
