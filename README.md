@@ -72,6 +72,9 @@ python3 build.py render ROOT      # write recipe.html into every recipe folder
 python3 build.py book   ROOT      # write ROOT/Cookbook.pdf
 python3 build.py all    ROOT      # score + render + book
 
+# Match photos to recipes by capture date (prints JSON, needs Pillow)
+python3 build.py match ROOT photo1.jpg photo2.heic
+
 # File a photo for a recipe (makes photo-DATE.jpg and thumb-DATE.jpg)
 python3 build.py photo IMG_1234.HEIC ROOT/2026-11-01_red-wine-braised-beef 2026-11-01
 
@@ -101,6 +104,15 @@ COOKBOOK_TITLE="Sam's Cookbook" COOKBOOK_OWNER="Sam Lee" python3 build.py book R
 | `plating`, `tips`, `fixes`, `sources` | Plating notes, general tips, problem and fix pairs, links. |
 | `cooks` | One entry per time you cooked it: `date`, `photo`, `gut` (1 to 5), `comparisons`, `notes`, `change_next_time`. |
 | `score`, `rank`, `rank_total` | Written by `build.py score`. Do not edit. |
+
+## Photo matching
+
+`build.py match` reads each photo's capture date (EXIF, then file time) and ranks the recipes that have no photo yet by how close their cook date is.
+
+- `confident`: exactly one recipe is within 1 day of the photo.
+- `ambiguous`: several recipes, or none within a day. Decide by looking at the photo.
+
+Filenames are never used, so photos can keep their camera names. Save originals, not screenshots, so the capture date stays attached.
 
 ## How scoring works
 
