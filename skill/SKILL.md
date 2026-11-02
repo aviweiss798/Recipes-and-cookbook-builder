@@ -1,6 +1,6 @@
 ---
 name: everything-cheffing
-description: Cooking workflow for brainstorming a dish, writing a recipe artifact, rating cooked meals and building a cookbook. Use when the user wants to decide what to cook, get a recipe, share a photo of a finished dish, rate a meal or ask about their cookbook.
+description: Cooking workflow for brainstorming a dish, writing a recipe artifact, rating cooked meals and building a cookbook. Use at the start of every chat in the cooking project (runs a silent cookbook sync first) and whenever the user wants to decide what to cook, get a recipe, share a photo of a finished dish, rate a meal or ask about their cookbook.
 ---
 
 # Everything Cheffing
@@ -34,13 +34,13 @@ Recipes/
 
 Mirror in the **Everything Cheffing** project (readable from the phone with no Mac): `cookbook/recipe_template.html`, `cookbook/build.py`, `cookbook/Kitchen.md`, `cookbook/rankings.json`, plus `cookbook/pending/*.json` for saves made while the Mac was unreachable.
 
-`build.py` commands: `artifact <recipe.json> <out.html>`, `score <ROOT>`, `render <ROOT>`, `book <ROOT>`, `all <ROOT>`, `photo <src> <recipe_dir> <date>`. `score` and `render` need only stdlib and run on the Mac. `book` needs playwright + Pillow and `photo` needs Pillow (+ pillow-heif): run those in the cloud workspace.
+`build.py` commands: `artifact <recipe.json> <out.html>`, `score <ROOT>`, `render <ROOT>`, `book <ROOT>`, `all <ROOT>`, `photo <src> <recipe_dir> <date>`, `match <ROOT> <photo>...` (cloud, needs Pillow: prints each photo's capture date and candidate recipes as JSON). `score` and `render` need only stdlib and run on the Mac. `book` needs playwright + Pillow and `photo` needs Pillow (+ pillow-heif): run those in the cloud workspace.
 
 ## Session start (silent)
 
 1. Try `device_list_dir` on the Recipes root. If it works, the Mac is **linked**. If the remote-devices tools are missing or the call fails, work **unlinked** (the cook usually cooks from his phone).
 2. Read `Kitchen.md` and `rankings.json` (Mac if linked, else the project mirror).
-3. If linked, check `cookbook/pending/` in the project and `Recipes/_inbox/`. If anything is waiting, run Sync before or after the current task and say so in one line.
+3. **Automatic sync, every new chat, whatever the first message says.** If linked, check `cookbook/pending/` in the project and `Recipes/_inbox/` (ignore README.md and `_filed/`). If anything is waiting, run Sync right away, before the user's request, without asking. Say what you filed in one line, then continue with the request. If nothing is waiting, say nothing. If not linked, skip it; photos wait in `_inbox` for the next linked chat.
 4. Read past chats in the Everything Cheffing project only when they bear on the dish (a dish he already made, a technique he liked).
 
 ## Standards that apply to every stage
@@ -191,16 +191,21 @@ Triggered when the cook sends a photo of the finished dish (or says he cooked it
 
 1. Write the full `recipe.json` (with the new cooks entry and the comparisons) to the project as `cookbook/pending/<slug>.json`.
 2. Apply the insertion to the project's `cookbook/rankings.json` so the next phone rating compares against the right list.
-3. Ask the cook to save the photo to **Files > iCloud Drive > Recipes > _inbox**, named `<slug>.jpg` (give him the exact name). iCloud syncs it to the Mac.
-4. Tell him it files into the cookbook the next time a session is linked to his Mac, and the PDF rebuilds then.
+3. Ask the cook to save the photo to **Files > iCloud Drive > Recipes > _inbox**. Any filename works; never ask him to rename it. Tell him to save the original (from Photos, Share > Save to Files) so the capture date stays attached. iCloud syncs it to the Mac.
+4. Tell him it files into the cookbook automatically the next time a new chat opens with his Mac linked, and the PDF rebuilds then.
 
 ## Sync (any linked session that finds pending items)
 
 1. For each `cookbook/pending/<slug>.json` in the project: create or update `Recipes/<slug>/recipe.json` on the Mac. If the folder exists, merge the `cooks` entries; don't overwrite older ones.
-2. For each photo in `Recipes/_inbox/` (skip README.md): match it to a slug by filename (ask the cook if unclear), stage it, convert with `build.py photo`, commit `photo-DATE.jpg` and `thumb-DATE.jpg` into the recipe folder, then move the original into `_inbox/_filed/` (device_bash mv).
+2. Stage every photo in `Recipes/_inbox/` (skip README.md and `_filed/`) and run `build.py match <ROOT> <photos>` in the cloud workspace. It reads each photo's capture date (EXIF, falling back to file time) and ranks the recipes that have no photo yet by how close their cook date is. Never match by filename.
+   - **confident** (one recipe within 1 day): file it there.
+   - **ambiguous** (several, or none within a day): open the photo with Read, compare what is on the plate to each candidate's title and components (taco shells, ramen bowl, braised beef over mash), and pick the best match. Do not stop to ask. Say in the report what you picked and why, and that the cook can correct it. If nothing in the photo fits any candidate, leave it in `_inbox` and ask.
+   - Photos with `date_source: file-time` are weaker evidence than EXIF; lean on the picture more.
+   - Two photos matching one recipe: use the later one as the cooked photo, leave the other in `_inbox`, and ask.
+   Convert with `build.py photo <photo> <dir> <cook date>`, commit `photo-DATE.jpg` and `thumb-DATE.jpg` into the recipe folder (the date is the recipe's cook date, not the photo's), then move the original into `_inbox/_filed/` (device_bash mv).
 3. Copy the project's `cookbook/rankings.json` over the Mac's `rankings.json` only if the project copy is newer and contains every slug the Mac copy has. Otherwise merge by re-inserting the pending slugs at their recorded positions, and tell the cook if the order needs his input.
 4. Run score, render, and book (as in "Save: linked"). Delete the processed `cookbook/pending/*.json` docs from the project.
-5. Report what was filed in one or two lines.
+5. Report what was filed in one or two lines, including every guessed match.
 
 ## Backfill (adding past dishes)
 

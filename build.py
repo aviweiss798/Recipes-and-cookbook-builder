@@ -16,6 +16,7 @@ Commands:
   python3 build.py render <ROOT>                       write recipe.html into every recipe folder
   python3 build.py book <ROOT>                         write Cookbook.pdf (needs playwright)
   python3 build.py all <ROOT>                          score + render + book
+  python3 build.py match <ROOT> <photo>...                      match photos to recipes by capture date (JSON)
   python3 build.py photo <src_image> <recipe_dir> <YYYY-MM-DD>   photo-<date>.jpg + thumb-<date>.jpg (HEIC ok)
 
 score and render need only the Python standard library, so they run on the Mac directly.
@@ -208,6 +209,52 @@ def cmd_book(root):
     print(f"Cookbook.pdf -> {out} ({len(recipes)} recipes)")
 
 
+def photo_date(path):
+    """Capture date of a photo as YYYY-MM-DD: EXIF DateTimeOriginal, then EXIF DateTime, then file mtime."""
+    from PIL import Image
+    try:
+        import pillow_heif
+        pillow_heif.register_heif_opener()
+    except ImportError:
+        pass
+    try:
+        ex = Image.open(path).getexif()
+        raw = (ex.get_ifd(0x8769).get(0x9003) or ex.get(0x9003) or ex.get(0x0132))
+        if raw:
+            return str(raw)[:10].replace(":", "-"), "exif"
+    except Exception:
+        pass
+    return dt.date.fromtimestamp(Path(path).stat().st_mtime).isoformat(), "file-time"
+
+
+def cmd_match(root, *photos):
+    """Print JSON: for each photo, its date and the recipes it could belong to, closest cook date first.
+
+    Candidates are recipes whose latest cook has no photo on disk yet. Status:
+      confident  one candidate within 1 day of the photo date
+      ambiguous  several candidates, or none within 1 day (look at the photo and decide)
+    """
+    root = Path(root)
+    cands = []
+    for d in recipe_dirs(root):
+        r = load(d / "recipe.json")
+        cooks = r.get("cooks") or []
+        last = cooks[-1] if cooks else {}
+        if not last or (last.get("photo") and (d / last["photo"]).exists()):
+            continue
+        cands.append((r["slug"], r["title"], last.get("date") or r.get("created")))
+    out = []
+    for ph in photos:
+        pd, src = photo_date(ph)
+        day = dt.date.fromisoformat(pd)
+        ranked = sorted(((abs((dt.date.fromisoformat(c[2]) - day).days), c) for c in cands), key=lambda x: x[0])
+        near = [c for gap, c in ranked if gap <= 1]
+        out.append({"photo": str(ph), "photo_date": pd, "date_source": src,
+                    "status": "confident" if len(near) == 1 else "ambiguous",
+                    "candidates": [{"slug": c[0], "title": c[1], "cook_date": c[2], "gap_days": gap} for gap, c in ranked]})
+    print(json.dumps(out, indent=2))
+
+
 def cmd_photo(src, recipe_dir, date):
     """Write photo-<date>.jpg (2400px) and thumb-<date>.jpg (1400px, for the PDF) into recipe_dir."""
     from PIL import Image, ImageOps
@@ -237,4 +284,5 @@ if __name__ == "__main__":
     elif c == "book": cmd_book(a[1])
     elif c == "all": cmd_score(a[1]); cmd_render(a[1]); cmd_book(a[1])
     elif c == "photo": cmd_photo(a[1], a[2], a[3])
+    elif c == "match": cmd_match(a[1], *a[2:])
     else: print(__doc__); sys.exit(1)
