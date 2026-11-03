@@ -114,6 +114,18 @@ COOKBOOK_TITLE="Sam's Cookbook" COOKBOOK_OWNER="Sam Lee" python3 build.py book R
 
 Photos sent in chat are filed directly, so matching is optional. Use it for loose photos that arrive without context. Filenames are never used, so photos can keep their camera names. Keep originals, not screenshots, so the capture date stays attached.
 
+## Making a dish again
+
+Tell Claude in chat that you made a dish again. It asks if the new cook is better, worse or the same as last time.
+
+- **Better:** the new version wins. The recipe text takes your changes, the dish is re-rated and moves in the ranking.
+- **Worse or the same:** the old version stays. The new cook is still recorded.
+- **Photos:** every cook's photo shows on the dish page, and the kept version is labeled.
+
+Each cook in `recipe.json` can carry `"ranked": true`. The cook with that flag supplies the score, gut rating and notes. Without a flag, the latest cook counts.
+
+Ask for changes to a recipe you have not cooked yet and Claude edits the recipe without touching scores or ranks.
+
 ## How scoring works
 
 1. After cooking, give the dish a gut rating from 1 to 5. That picks its bucket in `rankings.json`.

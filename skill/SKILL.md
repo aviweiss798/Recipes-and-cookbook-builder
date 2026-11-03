@@ -172,14 +172,23 @@ Triggered when the cook sends a photo of the finished dish (or says he cooked it
 4. Compute: insert the slug into `rankings.json`, append to `history` `{date, slug, gut, comparisons: [{vs, result}]}`, run `build.py score`. Scores come from position: gut 5 → 9.0 to 10.0, 4 → 7.0 to 8.9, 3 → 5.0 to 6.9, 2 → 3.0 to 4.9, 1 → 1.0 to 2.9, spread evenly by rank inside the band. Every insert reshuffles the whole bucket, so the list compounds over time.
 5. Tell the cook the score, the rank ("#3 of 11"), and any dish whose score moved.
 
-**Remaking a dish already in the cookbook:** add a new entry to its `cooks` list (no new folder), remove it from its bucket, and run the rating procedure again so its position reflects the latest cook. Keep the old cook entries.
+**Remaking a dish already in the cookbook.** the cook tells you in chat that he made it again. Each dish keeps its best version: the recipe text, the score and the rank always come from the higher-rated cook. Both photos stay on the page.
+1. Find the dish folder. Ask what he changed this time (multiple choice, skippable) and what he thought. Add a new entry to `cooks` (no new folder). Keep the old entries.
+2. Ask one question: "Compared with last time, is this one better, worse, or about the same?"
+3. **Worse or about the same:** the old version stays. Ask the gut rating (1 to 5) for the record. Do not touch `rankings.json`. Restore `recipe.json` content from the last commit (`git show HEAD:<slug>/recipe.json`), keeping only the new `cooks` entry. Tell him the old version is kept and why.
+4. **Better:** the new version wins. Update `recipe.json` with the changes he made. Run the normal rating procedure for the new cook (gut rating, then binary-search comparisons), but first remove this dish from its current bucket so it is not compared with itself. If the new gut rating is lower than the old one, ask which he means before continuing. Insert at the new position and set `"ranked": true` on the new cook (remove it from older cooks).
+5. The dish's `ranked` cook is the one the cookbook shows for score, gut rating, notes and the rankings table. If no cook has `ranked`, the latest cook counts.
+6. **Photos:** if he sends one, file it as `photo-<cook date>.jpg` and `thumb-<cook date>.jpg` with `build.py photo`, and set the new cook's `photo`. Every cook's photo shows on the page, with the kept version labeled. No photo means no new picture; do not ask twice.
+7. Rebuild, commit, push, and republish the recipe artifact if the recipe text changed.
 
-**cooks entry:** `{"date": "YYYY-MM-DD", "photo": "photo-YYYY-MM-DD.jpg", "gut": 4, "comparisons": [{"vs": "<slug>", "result": "better|worse|same"}], "notes": "…", "change_next_time": "…"}`
+**Changing a recipe without cooking it** ("make the sauce spicier next time"): edit `recipe.json` directly, add the reason to the dish's `change_next_time` or a tip, rebuild, commit, push and republish the artifact. Do not change scores, ranks or `cooks`. Say that the change is untested until he cooks it. Ask first if the change is ambiguous.
+
+**cooks entry:** `{"date": "YYYY-MM-DD", "photo": "photo-YYYY-MM-DD.jpg", "gut": 4, "comparisons": [{"vs": "<slug>", "result": "better|worse|same"}], "notes": "…", "change_next_time": "…", "ranked": true}`. `ranked` marks the cook that holds the dish's score; only one cook per dish has it.
 
 ### Save (always the same, no Mac needed)
 
 1. Photo: the cook sends it in this chat. Convert it: `python3 _system/build.py photo <upload> <slug> <cook date>` → `photo-DATE.jpg` + `thumb-DATE.jpg` in the recipe folder. If he sends several, open them and use the best one. If no photo yet, save everything else and ask for it; when it arrives, file it the same way.
-2. Update `<slug>/recipe.json` (new `cooks` entry with gut, comparisons, notes) and `rankings.json` (insertion plus `history`).
+2. Update `<slug>/recipe.json` (new `cooks` entry with gut, comparisons, notes, `ranked: true`) and `rankings.json` (insertion plus `history`). For a remake, follow "Remaking a dish" above instead.
 3. `python3 _system/build.py all .` (score, render, PDF).
 4. Commit and push (see Committing).
 5. Confirm in one line: the score and rank. Offer to send Cookbook.pdf with SendUserFile only if he asks.
