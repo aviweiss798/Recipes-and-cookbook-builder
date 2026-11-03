@@ -1,9 +1,9 @@
 ---
 name: everything-cheffing
-description: Cooking workflow for brainstorming a dish, writing a recipe artifact, rating cooked meals and building a cookbook. Use at the start of every chat in the cooking project (runs a silent cookbook sync first) and whenever the user wants to decide what to cook, get a recipe, share a photo of a finished dish, rate a meal or ask about their cookbook.
+description: Cooking workflow for brainstorming a dish, writing a recipe artifact, rating cooked meals and building a cookbook. Use at the start of every chat in the cooking project (loads the cookbook repo first) and whenever the user wants to decide what to cook, get a recipe or grocery list, shares a photo of a finished dish, rates a meal or asks about their cookbook or rankings.
 ---
 
-# Everything Cheffing
+# Cooking workflow
 
 One procedure, every time: **Brainstorm → Develop the dish → Groceries, prep and equipment → Recipe artifact → Cook → Photo, rating and cookbook save.**
 
@@ -12,36 +12,34 @@ Enter at the stage the request fits:
 - A named dish ("I want birria tacos") → Stage 2 (collect Stage 1 logistics first if missing).
 - A photo of a finished meal, or "rate this" → Stage 5.
 - "Add my past dishes", "backfill" → Backfill.
-- "Sync the cookbook" or any session linked to the Mac that finds pending items → Sync.
 
 Never skip a stage's exit condition. Ask questions in batches and wait for answers. Never assume what the cook wants.
 
 ## Files
 
-iCloud root (Mac): `~/Library/Mobile Documents/com~apple~CloudDocs/Recipes` (any synced folder works)
-In device_bash it is `$HOME/mnt/Recipes`.
+Everything lives in the private GitHub repo **<owner>/<cookbook-repo>** (create it yourself, set it to Private, and replace these placeholders). No Mac needed. Working copy: the folder where the repo is cloned (called `REPO` below).
 
 ```
-Recipes/
+<cookbook-repo>/
   Cookbook.pdf          generated: cover, rankings table, every recipe with photo and score
-  Rankings.md           generated: ranked list, readable on the phone
+  Rankings.md           generated: ranked list
   rankings.json         ranking source of truth: {"buckets": {"5": [slugs best→worst], ... "1": []}, "history": [...]}
   Kitchen.md            equipment (source of truth) + spice/pantry pool (reference only)
-  _inbox/               photos the cook saves from his phone, waiting to be filed
-  _system/recipe_template.html, build.py, fonts/
+  _system/              recipe_template.html, build.py, fonts/, SKILL.md (copy of this skill)
   YYYY-MM-DD_dish-slug/ recipe.json (source of truth), recipe.html (generated), photo-DATE.jpg, thumb-DATE.jpg
 ```
 
-Mirror in the **Everything Cheffing** project (readable from the phone with no Mac): `cookbook/recipe_template.html`, `cookbook/build.py`, `cookbook/Kitchen.md`, `cookbook/rankings.json`, plus `cookbook/pending/*.json` for saves made while the Mac was unreachable.
-
-`build.py` commands: `artifact <recipe.json> <out.html>`, `score <ROOT>`, `render <ROOT>`, `book <ROOT>`, `all <ROOT>`, `photo <src> <recipe_dir> <date>`, `match <ROOT> <photo>...` (cloud, needs Pillow: prints each photo's capture date and candidate recipes as JSON). `score` and `render` need only stdlib and run on the Mac. `book` needs playwright + Pillow and `photo` needs Pillow (+ pillow-heif): run those in the cloud workspace.
+`build.py` commands (run from the repo root): `artifact <recipe.json> <out.html>`, `score .`, `render .`, `book .` (needs playwright + Pillow), `all .`, `photo <src> <recipe_dir> <date>` (needs Pillow, plus pillow-heif for HEIC), `match . <photo>...` (optional: ranks recipes by how close their cook date is to a photo's capture date).
 
 ## Session start (silent)
 
-1. Try `device_list_dir` on the Recipes root. If it works, the Mac is **linked**. If the remote-devices tools are missing or the call fails, work **unlinked** (the cook usually cooks from his phone).
-2. Read `Kitchen.md` and `rankings.json` (Mac if linked, else the project mirror).
-3. **Automatic sync, every new chat, whatever the first message says.** If linked, check `cookbook/pending/` in the project and `Recipes/_inbox/` (ignore README.md and `_filed/`). If anything is waiting, run Sync right away, before the user's request, without asking. Say what you filed in one line, then continue with the request. If nothing is waiting, say nothing. If not linked, skip it; photos wait in `_inbox` for the next linked chat.
-4. Read past chats in the Everything Cheffing project only when they bear on the dish (a dish he already made, a technique he liked).
+1. Make sure the repo is in this session and cloned. If `REPO` exists, run `git -C /home/claude/everything-cheffing- pull --ff-only`. Otherwise attach the repo with push access (in Claude Code on the web that is the `add_repo` tool), clone it with a long timeout and register the clone. If attaching is denied, ask the user to name the repo in chat and retry.
+2. Read `Kitchen.md` and `rankings.json` from the repo.
+3. Read past chats in the cooking project only when they bear on the dish (a dish he already made, a technique he liked).
+
+## Committing
+
+After any change to the repo: `git add -A`, commit (use the user's git identity, preferably their GitHub noreply address), push to main. If the push is rejected, `git pull --rebase` and push again. Say in one line what was saved.
 
 ## Standards that apply to every stage
 
@@ -84,11 +82,11 @@ Mirror in the **Everything Cheffing** project (readable from the phone with no M
 2. **Ingredient check** (one message):
    - Items in Kitchen.md's spice/pantry pool: list them as "assuming you have these, confirm each". The pool is a reference, never proof.
    - Everything else: mark as buy, and ask what he already has.
-   - Note hard-to-find items and where to look (international aisle, Asian or Indian grocer; search for stores near West Lafayette, IN when it matters). Give the label or package wording to look for.
+   - Note hard-to-find items and where to look (international aisle, Asian or Indian grocer; search for stores near the user's location when it matters). Give the label or package wording to look for.
 3. **Substitutions:** for anything he can't get, sort into "fine to swap" (give the swap and the adjusted amount) and "must buy" (say why nothing replaces it).
 4. **Equipment:** list what the recipe needs. Items in Kitchen.md "Have" are assumed. Ask only about items under "Not confirmed yet" or missing from the file, then record the answer. If he lacks something, adapt the method.
 5. **Prep walkthrough:** what happens before cooking (marinating, soaking, brining, chopping, thawing, toasting), how far ahead, and what runs during cooking. Build the timeline back from the meal time.
-6. Update `Kitchen.md`: move confirmed equipment into Have / Don't have, update the spice pool's "Last seen" dates, add anything new, and move items he said he's out of to Known gaps. Save on the Mac if linked, and always mirror to the project `cookbook/Kitchen.md`.
+6. Update `Kitchen.md`: move confirmed equipment into Have / Don't have, update the spice pool's "Last seen" dates, add anything new, and move items he said he's out of to Known gaps. Commit it to the repo.
 
 **Exit:** grocery list, substitutions, equipment and prep plan are agreed → Stage 4.
 
@@ -96,10 +94,10 @@ Mirror in the **Everything Cheffing** project (readable from the phone with no M
 
 Write `recipe.json` (schema below), render it with the template, publish it as one Artifact. The page has three tabs: **Shop** (interactive checklist), **Prep**, **Cook**.
 
-1. Get the template and builder: from `Recipes/_system/` if linked (stage them), otherwise `project_read` `cookbook/recipe_template.html` and `cookbook/build.py` into one working folder.
+1. The template and builder are in `_system/` of the repo.
 2. Write `recipe.json`. Slug: `YYYY-MM-DD_dish-name-kebab` using the date it will be cooked.
-3. `python3 build.py artifact recipe.json recipe-artifact.html`, then publish with the Artifact tool (icon `recipe`, a one-sentence description). On every later change, edit `recipe.json`, rebuild, and republish to the same file path so the link stays the same.
-4. Save the uncooked recipe right away so it is never lost: linked → create the recipe folder on the Mac with `recipe.json`; unlinked → `project_write cookbook/pending/<slug>.json`.
+3. `python3 _system/build.py artifact <slug>/recipe.json recipe-artifact.html`, then publish with the Artifact tool (icon `recipe`, a one-sentence description). On every later change, edit `recipe.json`, rebuild, and republish to the same file path so the link stays the same.
+4. Save the uncooked recipe right away so it is never lost: write `<slug>/recipe.json` in the repo and commit.
 
 **Content rules (all required):**
 - **Shop:** every item with quantity and status: `buy`, `have` (confirmed in Stage 3, still listed so the checklist is complete) or `optional`. Notes for brand, label wording or what to look for.
@@ -174,42 +172,32 @@ Triggered when the cook sends a photo of the finished dish (or says he cooked it
 4. Compute: insert the slug into `rankings.json`, append to `history` `{date, slug, gut, comparisons: [{vs, result}]}`, run `build.py score`. Scores come from position: gut 5 → 9.0 to 10.0, 4 → 7.0 to 8.9, 3 → 5.0 to 6.9, 2 → 3.0 to 4.9, 1 → 1.0 to 2.9, spread evenly by rank inside the band. Every insert reshuffles the whole bucket, so the list compounds over time.
 5. Tell the cook the score, the rank ("#3 of 11"), and any dish whose score moved.
 
-**Remaking a dish already in the cookbook:** add a new entry to its `cooks` list (no new folder), remove it from its bucket, and run the rating procedure again so its position reflects the latest cook. Keep the old cook entries.
+**Remaking a dish already in the cookbook.** the cook tells you in chat that he made it again. Each dish keeps its best version: the recipe text, the score and the rank always come from the higher-rated cook. Both photos stay on the page.
+1. Find the dish folder. Ask what he changed this time (multiple choice, skippable) and what he thought. Add a new entry to `cooks` (no new folder). Keep the old entries.
+2. Ask one question: "Compared with last time, is this one better, worse, or about the same?"
+3. **Worse or about the same:** the old version stays. Ask the gut rating (1 to 5) for the record. Do not touch `rankings.json`. Restore `recipe.json` content from the last commit (`git show HEAD:<slug>/recipe.json`), keeping only the new `cooks` entry. Tell him the old version is kept and why.
+4. **Better:** the new version wins. Update `recipe.json` with the changes he made. Run the normal rating procedure for the new cook (gut rating, then binary-search comparisons), but first remove this dish from its current bucket so it is not compared with itself. If the new gut rating is lower than the old one, ask which he means before continuing. Insert at the new position and set `"ranked": true` on the new cook (remove it from older cooks).
+5. The dish's `ranked` cook is the one the cookbook shows for score, gut rating, notes and the rankings table. If no cook has `ranked`, the latest cook counts.
+6. **Photos:** if he sends one, file it as `photo-<cook date>.jpg` and `thumb-<cook date>.jpg` with `build.py photo`, and set the new cook's `photo`. Every cook's photo shows on the page, with the kept version labeled. No photo means no new picture; do not ask twice.
+7. Rebuild, commit, push, and republish the recipe artifact if the recipe text changed.
 
-**cooks entry:** `{"date": "YYYY-MM-DD", "photo": "photo-YYYY-MM-DD.jpg", "gut": 4, "comparisons": [{"vs": "<slug>", "result": "better|worse|same"}], "notes": "…", "change_next_time": "…"}`
+**Changing a recipe without cooking it** ("make the sauce spicier next time"): edit `recipe.json` directly, add the reason to the dish's `change_next_time` or a tip, rebuild, commit, push and republish the artifact. Do not change scores, ranks or `cooks`. Say that the change is untested until he cooks it. Ask first if the change is ambiguous.
 
-### Save: linked to the Mac
+**cooks entry:** `{"date": "YYYY-MM-DD", "photo": "photo-YYYY-MM-DD.jpg", "gut": 4, "comparisons": [{"vs": "<slug>", "result": "better|worse|same"}], "notes": "…", "change_next_time": "…", "ranked": true}`. `ranked` marks the cook that holds the dish's score; only one cook per dish has it.
 
-1. Convert the photo in the cloud workspace: `python3 build.py photo <upload> <workdir>/<slug> <date>` → `photo-DATE.jpg` + `thumb-DATE.jpg`. Commit both into `Recipes/<slug>/` with `device_commit_files`.
-2. Write the updated `recipe.json` and `rankings.json` to the Mac. Edit them in place with device_bash (python read-modify-write); never retype a file from an earlier tool output.
-3. On the Mac (device_bash): `cd "$HOME/mnt/Recipes" && python3 _system/build.py score . && python3 _system/build.py render .`
-4. Build the PDF in the cloud workspace: stage `_system/*` (template, build.py, fonts), every `*/recipe.json`, every `*/thumb-*.jpg` and `rankings.json` into one folder that keeps the Recipes layout, run `python3 _system/build.py book <that folder>`, and commit `Cookbook.pdf` back to the Recipes root.
-5. Mirror `rankings.json` and `Kitchen.md` to the project `cookbook/`.
-6. Confirm in one line: where it saved, the score and rank.
+### Save (always the same, no Mac needed)
 
-### Save: not linked (phone)
+1. Photo: the cook sends it in this chat. Convert it: `python3 _system/build.py photo <upload> <slug> <cook date>` → `photo-DATE.jpg` + `thumb-DATE.jpg` in the recipe folder. If he sends several, open them and use the best one. If no photo yet, save everything else and ask for it; when it arrives, file it the same way.
+2. Update `<slug>/recipe.json` (new `cooks` entry with gut, comparisons, notes, `ranked: true`) and `rankings.json` (insertion plus `history`). For a remake, follow "Remaking a dish" above instead.
+3. `python3 _system/build.py all .` (score, render, PDF).
+4. Commit and push (see Committing).
+5. Confirm in one line: the score and rank. Offer to send Cookbook.pdf with SendUserFile only if he asks.
 
-1. Write the full `recipe.json` (with the new cooks entry and the comparisons) to the project as `cookbook/pending/<slug>.json`.
-2. Apply the insertion to the project's `cookbook/rankings.json` so the next phone rating compares against the right list.
-3. Ask the cook to save the photo to **Files > iCloud Drive > Recipes > _inbox**. Any filename works; never ask him to rename it. Tell him to save the original (from Photos, Share > Save to Files) so the capture date stays attached. iCloud syncs it to the Mac.
-4. Tell him it files into the cookbook automatically the next time a new chat opens with his Mac linked, and the PDF rebuilds then.
-
-## Sync (any linked session that finds pending items)
-
-1. For each `cookbook/pending/<slug>.json` in the project: create or update `Recipes/<slug>/recipe.json` on the Mac. If the folder exists, merge the `cooks` entries; don't overwrite older ones.
-2. Stage every photo in `Recipes/_inbox/` (skip README.md and `_filed/`) and run `build.py match <ROOT> <photos>` in the cloud workspace. It reads each photo's capture date (EXIF, falling back to file time) and ranks the recipes that have no photo yet by how close their cook date is. Never match by filename.
-   - **confident** (one recipe within 1 day): file it there.
-   - **ambiguous** (several, or none within a day): open the photo with Read, compare what is on the plate to each candidate's title and components (taco shells, ramen bowl, braised beef over mash), and pick the best match. Do not stop to ask. Say in the report what you picked and why, and that the cook can correct it. If nothing in the photo fits any candidate, leave it in `_inbox` and ask.
-   - Photos with `date_source: file-time` are weaker evidence than EXIF; lean on the picture more.
-   - Two photos matching one recipe: use the later one as the cooked photo, leave the other in `_inbox`, and ask.
-   Convert with `build.py photo <photo> <dir> <cook date>`, commit `photo-DATE.jpg` and `thumb-DATE.jpg` into the recipe folder (the date is the recipe's cook date, not the photo's), then move the original into `_inbox/_filed/` (device_bash mv).
-3. Copy the project's `cookbook/rankings.json` over the Mac's `rankings.json` only if the project copy is newer and contains every slug the Mac copy has. Otherwise merge by re-inserting the pending slugs at their recorded positions, and tell the cook if the order needs his input.
-4. Run score, render, and book (as in "Save: linked"). Delete the processed `cookbook/pending/*.json` docs from the project.
-5. Report what was filed in one or two lines, including every guessed match.
+If he sends a photo with no context ("here's dinner"), work out which recipe it is from the picture and recent cook dates (`build.py match . <photo>` helps). State what you picked.
 
 ## Backfill (adding past dishes)
 
-1. Find the dish in the cook's past chats (`conversation_search`, `read_conversation`) and any artifact or doc it produced (`Artifact` read). Use the **final** version he cooked, with every substitution and change he made in that chat.
+1. Find the dish in the user's past chats (`conversation_search`, `read_conversation`) and any artifact or doc it produced (`Artifact` read). Use the **final** version he cooked, with every substitution and change he made in that chat.
 2. Rebuild it as a full `recipe.json` to Stage 4 standards. Fill gaps (plating, fixes, per-step quantities) with research, and keep his choices. Use the date he cooked it as the slug date.
 3. Ask for the photo, then run the rating procedure, then save. One dish at a time, so each new rating compares against the dishes already filed.
 
@@ -217,4 +205,3 @@ Triggered when the cook sends a photo of the finished dish (or says he cooked it
 
 - **Equipment** is the source of truth. Don't ask about Have items. Ask once about anything else, then record it.
 - **Spices and pantry** are a reference pool. Assume them, list them, and confirm each one in every Stage 3 check. After each check, update "Last seen" dates and move anything he's out of to Known gaps.
-- Always keep the project mirror in sync after an edit.

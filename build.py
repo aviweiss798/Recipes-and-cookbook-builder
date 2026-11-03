@@ -105,6 +105,15 @@ def cmd_artifact(recipe_json, out_html):
     print(f"artifact page -> {out_html}")
 
 
+def best_cook(r):
+    """The cook that holds the dish's ranking: the latest one marked ranked, else the latest cook."""
+    cooks = r.get("cooks") or [{}]
+    for c in reversed(cooks):
+        if c.get("ranked"):
+            return c
+    return cooks[-1]
+
+
 def cmd_score(root):
     root = Path(root)
     rp = root / "rankings.json"
@@ -137,7 +146,7 @@ def cmd_score(root):
              "| # | Dish | Score | Gut | Last cooked | Folder |", "|---|---|---|---|---|---|"]
     for i, s in enumerate(order, 1):
         r = load(by_slug[s] / "recipe.json")
-        last = (r.get("cooks") or [{}])[-1]
+        last = best_cook(r)
         lines.append(f"| {i} | {r['title']} | {scores[s]:.1f} | {last.get('gut', '')}/5 | {last.get('date', '')} | {s} |")
     uncooked = [s for s in by_slug if s not in scores]
     if uncooked:
@@ -178,15 +187,19 @@ def cmd_book(root):
     for d in dirs:
         r = load(d / "recipe.json")
         cooks = r.get("cooks") or []
-        ph = cooks[-1].get("photo") if cooks else None
-        if ph:
-            thumb = d / ph.replace("photo-", "thumb-", 1)
-            src = thumb if thumb.exists() else (d / ph if (d / ph).exists() else None)
-            if src:
-                small = pdf_photo(src, build / "photos")
-                r = json.loads(json.dumps(r))
-                r["cooks"][-1]["photo"] = small.name
-                bases[r["slug"]] = "photos/"
+        if any(c.get("photo") for c in cooks):
+            r = json.loads(json.dumps(r))
+            for c in r["cooks"]:
+                ph = c.get("photo")
+                if not ph:
+                    continue
+                thumb = d / ph.replace("photo-", "thumb-", 1)
+                src = thumb if thumb.exists() else (d / ph if (d / ph).exists() else None)
+                if src:
+                    c["photo"] = pdf_photo(src, build / "photos").name
+                    bases[r["slug"]] = "photos/"
+                else:
+                    c["photo"] = None
         recipes.append(r)
     # ranked first (best to worst), then uncooked by date
     recipes.sort(key=lambda r: (r.get("rank") is None, r.get("rank") or 0, r.get("created", "")))

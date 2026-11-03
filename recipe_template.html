@@ -135,6 +135,9 @@ table.fixes td:first-child { font-weight: 600; width: 38%; }
 /* cooked card */
 .cooked { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; display: grid; grid-template-columns: 1fr; }
 .cooked img { width: 100%; height: auto; max-height: 70vh; object-fit: contain; display: block; background: var(--surface); }
+.gallery { display: flex; flex-direction: column; gap: 2px; }
+.gallery figure { margin: 0; }
+.gallery figcaption { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 6px 16px; text-align: center; }
 .cooked .meta { padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
 .score { font-family: var(--display); font-size: 44px; line-height: 1; }
 .score small { font-family: var(--mono); font-size: 14px; color: var(--muted); }
@@ -158,6 +161,7 @@ body[data-mode="print"] .wrap { max-width: none; gap: 14px; }
 body[data-mode="print"] .recipe-print, body[data-mode="print"] .print-section, body[data-mode="print"] section.panel { gap: 12px; }
 body[data-mode="print"] .cooked { grid-template-columns: 3.4in 1fr; break-inside: avoid; }
 body[data-mode="print"] .cooked img { height: auto; max-height: 4.6in; object-fit: contain; }
+body[data-mode="print"] .gallery.multi img { max-height: 3in; }
 body[data-mode="print"] .shopgrid { columns: 2; column-gap: 14px; }
 body[data-mode="print"] .shopgrid .group { break-inside: avoid; margin-bottom: 12px; }
 body[data-mode="print"] label.item { padding: 5px 10px; grid-template-columns: 16px 1fr auto; }
@@ -303,16 +307,26 @@ body[data-mode="print"] .facts .fact { font-size: 11px; }
       "</header>";
   }
 
+  function bestCook(r) {
+    var cooks = r.cooks || [];
+    for (var i = cooks.length - 1; i >= 0; i--) if (cooks[i].ranked) return cooks[i];
+    return cooks[cooks.length - 1] || {};
+  }
+
   function cookedCard(r) {
     var cooks = r.cooks || [];
     if (!cooks.length) return "";
-    var last = cooks[cooks.length - 1];
-    var photo = last.photo ? '<img src="' + esc((CFG.photoBase || "") + last.photo) + '" alt="' + esc(r.title) + ' as cooked">' : "";
-    return '<div class="cooked">' + photo + '<div class="meta"><span class="eyebrow">Cooked ' + esc(last.date || "") + (cooks.length > 1 ? " · made " + cooks.length + " times" : "") + "</span>" +
+    var best = bestCook(r);
+    var shots = cooks.filter(function (c) { return c.photo; });
+    var gallery = shots.length ? '<div class="gallery' + (shots.length > 1 ? " multi" : "") + '">' + shots.map(function (c) {
+      return "<figure><img src=\"" + esc((CFG.photoBase || "") + c.photo) + "\" alt=\"" + esc(r.title) + " cooked " + esc(c.date || "") + "\">" +
+        (shots.length > 1 ? "<figcaption>" + esc(c.date || "") + (c === best ? " · kept version" : "") + "</figcaption>" : "") + "</figure>";
+    }).join("") + "</div>" : "";
+    return '<div class="cooked">' + gallery + '<div class="meta"><span class="eyebrow">Cooked ' + esc(cooks[cooks.length - 1].date || "") + (cooks.length > 1 ? " · made " + cooks.length + " times" : "") + "</span>" +
       (r.score != null ? '<div class="score">' + Number(r.score).toFixed(1) + ' <small>/ 10' + (r.rank ? " · #" + r.rank + " of " + r.rank_total : "") + "</small></div>" : "") +
-      (last.gut ? '<span class="mono">Gut rating ' + esc(last.gut) + " / 5</span>" : "") +
-      (last.notes ? "<p>" + md(last.notes) + "</p>" : "") +
-      (last.change_next_time ? '<p><strong>Next time:</strong> ' + md(last.change_next_time) + "</p>" : "") +
+      (best.gut ? '<span class="mono">Gut rating ' + esc(best.gut) + " / 5" + (cooks.length > 1 ? " (best of " + cooks.length + " cooks)" : "") + "</span>" : "") +
+      (best.notes ? "<p>" + md(best.notes) + "</p>" : "") +
+      (best.change_next_time ? '<p><strong>Next time:</strong> ' + md(best.change_next_time) + "</p>" : "") +
       "</div></div>";
   }
 
@@ -394,7 +408,7 @@ body[data-mode="print"] .facts .fact { font-size: 11px; }
       if (ranked.length) {
         html += '<div class="block pagebreak" id="rankings"><h2>Rankings</h2><div class="tablewrap"><table class="rank"><thead><tr><th>#</th><th>Dish</th><th>Score</th><th>Gut</th><th>Cooked</th></tr></thead><tbody>' +
           list(ranked, function (x) {
-            var last = (x.cooks || [])[x.cooks.length - 1] || {};
+            var last = bestCook(x);
             return "<tr><td class=\"s\">" + x.rank + "</td><td><a class=\"toclink\" href=\"#r-" + esc(x.slug) + "\">" + md(x.title) + '</a></td><td class="s">' + Number(x.score).toFixed(1) + '</td><td class="s">' + esc(last.gut || "") + "/5</td><td class=\"mono\">" + esc(last.date || "") + "</td></tr>";
           }) + "</tbody></table></div></div>";
       }
